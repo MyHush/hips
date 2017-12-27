@@ -8,6 +8,9 @@ Having a HIP here does not make it a formally accepted standard until its status
 
 Those proposing changes should consider that ultimately consent may rest with the consensus of the Hush users.
 
-Number            | Title                                      | Owner                                 | Type          | Status        |
--------------     | -------------------------------------------| ------------------------------------- | ------------- | ------------- |
+Number            | Title                                      | Owner                                 | Type          | Status        
+----------------- | ------------------------------------------ | ------------------------------------- | ------------- | --------
 [1](hip-0001.md)  | HIP Purpose and Guidelines                 | Matthew Reichardt                     | Process       | Planning      |
+[2](hip-0002.md)  | Hush Foundation                            | Eddy O                                | Process       | Draft         |
+
+
