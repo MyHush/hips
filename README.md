@@ -10,6 +10,6 @@ Those proposing changes should consider that ultimately consent may rest with th
 
 Number            | Title                                      | Owner                                 | Type          | Status        
 ----------------- | ------------------------------------------ | ------------------------------------- | ------------- | --------
-[1](hip-0001.md)  | HIP Purpose and Guidelines                 | Matthew Reichardt                     | Process       | Planning      |
+[1](hip-0001.md)  | Identity Public Addresses                  | Duke Leto                             | Process       | Planning      |
 
 
