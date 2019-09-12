@@ -22,8 +22,8 @@ wallet.dat files, inherited from Bitcoin wallet format.
 Motivation
 ===========
 
-"We need to understand the current wallet format in order to design a new format." -- Daira
-    https://github.com/zcash/zcash/issues/2312
+The wallet.dat format has an extreme lack of documentation and this document
+aims to help fix the scarcity.
 
 Specification
 ===============
