@@ -1,0 +1,325 @@
+::
+
+  HIP: 400
+  Title: Format of Hush wallet.dat files
+  Author: Duke Leto <duke@leto.net>
+  Category: Standards
+  Created: 2019-09-12
+  License: GPLv3
+
+Terminology
+===========
+
+The key words "MUST", "MUST NOT", and "MAY" in this document are to be interpreted as described in RFC 2119.
+[#RFC2119]_
+
+Abstract
+===========
+
+This is a Standards HIP describing the format of Hush, Komodo and Zcash
+wallet.dat files, inherited from Bitcoin wallet format.
+
+Motivation
+===========
+
+"We need to understand the current wallet format in order to design a new format." -- Daira
+    https://github.com/zcash/zcash/issues/2312
+
+Specification
+===============
+
+Hush, Komodo and Zcash currently have exactly the same wallet.dat format, which is
+not planned to change.
+
+Zcash wallet.dat format is inherited from Bitcoin 0.11.2 wallet format with
+various additions to store data related to Sprout and Sapling shielded
+addresses, and transactions involving them. Transparent addresses and
+transactions involving them are identical, with exceptions being mentioned in
+this document.
+
+The wallet.dat is a BerkeleyDB BTree (binary tree) binary file, where all
+contents MUST be in a subtree called "main". Hush nodes MUST NOT store
+any data outside of the "main" subtree to maintain backward compatibility
+with software meant to work on Bitcoin wallets.
+
+The binary tree has keys and values. The keys consist of multiple units of
+data, a length, a type and an actual key value, in that order. For example, an
+entry for the pubkey of a transparent address MUST have type "key", and length
+MUST correspond to the length of the string "key", i.e. 3. This number is
+stored as an `unsigned char`.
+
+The rest of the data in the BTree key is actual public key data. The value of
+each key stores the private key associated with that pubkey and the SHA256 of
+the public and private key concatenated together.
+
+Here is a visual representation of one (key,pair) value for a transparent
+public key:
+
+::
+
+    <------ KEY -------+--------- VALUE ------------------>
+    -------------------------------------------------------
+    | 3 | key | pubkey | privkey | sha256(pubkey,privkey) |
+    -------------------------------------------------------
+
+
+Similarly, there is a "zkey" type which stored data related to Sprout shielded
+addresses. This key type simply stores a public and private key, without a
+hash of the values. This means that these entries take up much less space
+than transparent keys.
+
+::
+
+    <------ KEY --------+- VALUE ->
+    -------------------------------
+    | 4 | zkey | pubkey | privkey |
+    -------------------------------
+
+The reader should note that addresses are almost never stored in a
+wallet.dat file. Only transparent public keys and private keys exist in
+wallet.dat files, transparent addresses in general, are not stored directly,
+they are calculated from pubkeys by nodes when the wallet is loaded. Metadata
+about some transparent addresses is stored, such as in the `purpose` key type.
+
+Sprout shielded addresses work the same as above, only pubkeys and private keys
+are stored in wallet.dat. But in Sapling, there can be more than one
+diversified address for an incoming viewing key (IVK), so pairs of data of the
+form
+
+::
+
+    <------ KEY ----------+- VALUE ->
+    ---------------------------------
+    | 8  | sapzaddr | IVK | zaddr   |
+    ---------------------------------
+
+are stored in the wallet, the only actual addresses stored directly.
+
+Here is a concise list of each wallet key type with the kind of data that is stored:
+
+  * bestblock         - Data relating to best block, i.e. chaintip
+  * chdseed           - Encrypted HD seed
+  * ckey              - Encrypted transparent pubkey and private key
+  * csapzkey          - Encrypted Sapling zaddr pubkey and privkey
+  * cscript           - Redeem script
+  * czkey             - Encrypted Sprout zaddr pubkey and privkey
+  * defaultkey        - Default transparent address pubkey
+  * hdchain           - Hierarchical Deterministic chain code, derived from seed
+  * hdseed            - Hierarchical Deterministic seed
+  * key               - Transparent pubkey and privkey, with sha256(pubkey+privkey)
+  * keymeta           - Transparent key metadata
+  * minversion        - Minimum wallet version required to open this wallet.dat
+  * mkey              - Master key
+  * name              - Most recent address added to addressbook
+  * orderposnext      - Index of next tx
+  * pool              - Keypool pub/private keypair
+  * purpose           - Purpose of an address
+  * sapzaddr          - Sapling zaddr viewing key and address
+  * sapzkey           - Sapling zaddr pubkey and privkey
+  * sapzkeymeta       - Metadata about Sapling pubkeys
+  * tx                - Transaction data
+  * version           - Wallet version (different from source code version)
+  * vkey              - Sprout viewing key
+  * watchs            - Watch-only address
+  * witnesscachesize  - Shielded Note Witness cache size
+  * wkey              - Wallet Key
+  * zkey              - Sprout zaddr pubkey and privkey
+  * zkeymeta          - Metadata about Sprout pubkey
+
+The following are additions to the Bitcoin wallet format, they do not
+exist in Bitcoin Core wallets:
+
+  * zkey
+  * zkeymeta
+  * czkey
+  * sapzaddr
+  * sapzkey
+  * csapzkey
+  * sapzkeymeta
+
+The following keys only exist in Sapling-enabled wallets:
+
+  * csapzkey
+  * sapzkey
+  * sapzaddr
+  * sapzkeymeta
+
+A full description of each key type and the values they store is below.
+
+bestblock
+=========
+
+The current best block hash, in hex.
+
+  * There MUST be at most one `bestblock` key per wallet.
+  * Type: CBlockLocator defined in src/primitives/block.h
+  * Size: Variable
+
+cscript
+=======
+
+  * Size: 42 bytes
+
+A redeem script.
+
+defaultkey
+==========
+
+  * Default transparent public key of the wallet.
+  * There MUST be only one `defaultkey` key per wallet.
+  * The pubkey value of this key MUST exist in the current wallet as a
+    public, private key pair, stored in an element of type `key`.
+  * Value: Hex string, high nybble first.
+  * Size: 34 bytes
+
+hdseed
+======
+
+Hierarchical Deterministic seed, defined in BIP32 [#BIP32]_ .
+
+  * Size: 33 bytes
+
+hdchain
+======
+
+Hierarchical Deterministic chain code, defined in BIP32 [#BIP32]_ .
+It is derived from the HMAC-SHA512 of hdseed.
+
+  * Size: 48 bytes
+
+key
+===
+
+This stores a (public,private) keypair for a transparent address, along with
+SHA256(public+private), where `+` means concatenation.
+
+  * Size: 257 bytes
+
+keymeta
+======
+
+This stores metadata about a transparent key. If no metadata is available, the
+unix timestamp of when this key was created is stored.
+
+  * Size: 12 bytes
+
+mkey
+====
+
+Master key, defined in BIP32 [#BIP32]_ .
+It is derived from the HMAC-SHA512 of hdseed.
+
+   * Size: 32 bytes
+
+
+minversion
+===========
+
+Minimum wallet version needed to open this wallet.
+
+  * Size: 4 bytes
+
+name
+===========
+
+Most recently added address to the addressbook.
+
+  * String
+
+
+orderposnext
+===========
+
+This stores the next valid index to be used in the array of transactions,
+which is also equal to the number of transactions stored in the wallet.
+
+  * There MUST be only one `orderposnext` key per wallet.
+  * Size: 8 bytes
+
+pool
+===========
+  * Size: 46 bytes
+
+purpose
+===========
+
+Purpose of an address, i.e. "receive" or "change" etc.
+
+  * Key Size: 36 bytes
+  * Value Size: 8 bytes
+
+sapzaddr
+=========
+
+A Sapling incoming viewing key and address pair.
+
+sapzkey
+===========
+
+A Sapling shielded address pubkey and private key.
+
+  * Size: 169 bytes
+
+sapzkeymeta
+===========
+  * Size: 58 bytes
+
+tx
+===========
+
+A transaction, potentially containing both transparent and shielded inputs and outputs.
+
+  * Key Size: 64 bytes
+  * Value: CMerkleTx
+  * Value size: Variable
+
+version
+=======
+
+  * There MUST be only one `version` key per wallet.
+  * Value: unsigned integer
+  * Size: 4 bytes
+
+vkey
+=====
+
+Sprout viewing key.
+
+watchs
+======
+
+  * Size: 26 bytes
+
+A watch only transparent address.
+
+wkey
+=====
+
+A wallet private key, used in encrypted wallets.
+
+  * Value: CWalletKey
+
+witnesscachesize
+================
+
+Shielded note witness cache size, which includes both Sprout and Sapling notes.
+
+  * Value: unsigned integer
+  * Size: 8 bytes
+
+zkey
+================
+
+Sprout shielded address public key and private key.
+
+zkeymeta
+================
+   * Size: variable
+
+Sprout key metadata.
+
+References
+==========
+
+.. [#RFC2119] `Key words for use in RFCs to Indicate Requirement Levels <https://tools.ietf.org/html/rfc2119>`_
+.. [#BIP32] `Hierarchical Deterministic Wallets <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki>`_
