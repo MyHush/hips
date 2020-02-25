@@ -263,6 +263,10 @@ A Sapling shielded address pubkey and private key.
 sapzkeymeta
 ===========
   * Size: 58 bytes
+  * Value: CKeyMetadata
+  * Value size: ?
+  
+Consists of an `int nVersion`, `int64_t nCreateTime`, `string hdKeypath`, `uint256 seedFp` 
 
 tx
 ===========
