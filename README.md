@@ -11,6 +11,7 @@ Those proposing changes should consider that ultimately consent may rest with th
 Number            | Title                                      | Owner                                 | Type          | Status        
 ----------------- | ------------------------------------------ | ------------------------------------- | ------------- | --------
 [HIP208](hip-0208.md)  | Block Time Halving   | Duke Leto                             | Standards           | Planning      |
+[HIP212](hip-0212.md)  | Allow Recipient to Derive Sapling Ephemeral Secret from Note Plaintext | Duke Leto | Standards | Planning |
 [HIP304](hip-0304.md)  | z\_signmessage + z\_verifymessage   | Duke Leto                             | Standards           | Planning      |
 [HIP400](hip-0400.rst)  | wallet.dat format                  | Duke Leto                             | Informational       | Complete      |
 
