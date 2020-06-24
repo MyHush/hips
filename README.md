@@ -14,7 +14,6 @@ Number            | Title                                      | Owner          
 [HIP210](hip-0210.md)  | Sapling Anchor Deduplication within Transactions | Duke Leto | Standards | Planning |
 [HIP212](hip-0212.md)  | Allow Recipient to Derive Sapling Ephemeral Secret from Note Plaintext | Duke Leto | Standards | Planning |
 [HIP213](hip-0213.md)  | Shielded Coinbase Considered Harmful | Duke Leto | Standards | Planning |
-
 [HIP304](hip-0304.md)  | z\_signmessage + z\_verifymessage   | Duke Leto                             | Standards           | Planning      |
 [HIP310](hip-0310.md)  | Security Properties of Sapling Viewing Keys | Duke Leto | Informational | Planning |
 [HIP400](hip-0400.rst)  | wallet.dat format                  | Duke Leto                             | Informational       | Complete      |
